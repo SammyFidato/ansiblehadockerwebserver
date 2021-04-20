@@ -1,0 +1,44 @@
+- hosts: Docker
+ 
+  tasks:
+         - yum_repository:
+                 name: "docker_repo"
+                 baseurl: "https://download.docker.com/linux/centos/7/x86_64/stable"
+                 description: "docker"
+                 gpgcheck: no
+         
+         - command: "dnf install docker-ce --nobest -y"
+         
+         - service:
+                 name: "docker"
+                 state: started
+                 enabled: yes
+
+
+         - package:
+                 name: "python3"
+                 state: present
+
+         - name: Installing docker-py
+           command: "pip3 install docker"
+         
+         - docker_image:
+                 name: httpd
+                 source: pull
+
+         - name: Running docker image
+           docker_container:
+                   name: webserver
+                   image: httpd
+                   state: started
+                   published_ports:
+                           - 1234:80
+        
+         - copy:
+                 content: "Docker is sucessfully configured using Ansible Playbook"
+                 dest: "/mypage.html"
+
+         
+         - name: copy file to container
+           command: "docker cp /mypage.html webserver:/usr/local/apache2/htdocs/"
+                        
